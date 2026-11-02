@@ -1,0 +1,95 @@
+import type { Solution } from './solution.model.ts';
+
+export const SOLUTIONS_MOCK: Solution[] = [
+  {
+    id: 1,
+    substanceName: 'Соляная кислота',
+    description:
+      'Сильная одноосновная кислота. В разбавленных водных растворах диссоциирует практически полностью: HCl -> H+ + Cl-. Раствор бесцветный, сильно пахнет хлороводородом.',
+    molarConcentration: 0.1,
+    ph: 1,
+    imageUrl: '/media/HCl.PNG',
+    videoUrl: '/media/hcl.MP4',
+    likesCount: 3,
+    isLiked: 0,
+    isCreator: 0,
+  },
+  {
+    id: 2,
+    substanceName: 'Гидроксид натрия',
+    description:
+      'Сильное однокислотное основание, в водном растворе диссоциирует нацело: NaOH -> Na+ + OH-. Растворение сопровождается сильным разогревом.',
+    molarConcentration: 0.05,
+    ph: 12.7,
+    imageUrl: '/media/NaOH.PNG',
+    videoUrl: '/media/naoh.MP4',
+    likesCount: 2,
+    isLiked: 0,
+    isCreator: 0,
+  },
+  {
+    id: 3,
+    substanceName: 'Хлорид натрия',
+    description:
+      'Соль сильной кислоты и сильного основания, полностью диссоциирует: NaCl -> Na+ + Cl-. Среда раствора нейтральная, гидролиза нет.',
+    molarConcentration: 0.2,
+    ph: 7,
+    imageUrl: '/media/NaCl.PNG',
+    videoUrl: '/media/nacl.mov',
+    likesCount: 1,
+    isLiked: 0,
+    isCreator: 0,
+  },
+  {
+    id: 4,
+    substanceName: 'Серная кислота',
+    description:
+      'Сильная двухосновная кислота, диссоциирует ступенчато: по первой ступени практически полностью, по второй — частично.',
+    molarConcentration: 0.01,
+    ph: 1.7,
+    imageUrl: '/media/H2SO4.PNG',
+    videoUrl: '/media/h2so4.MP4',
+    likesCount: 2,
+    isLiked: 0,
+    isCreator: 0,
+  },
+  {
+    id: 5,
+    substanceName: 'Аммиак',
+    description:
+      'Слабое основание, в воде диссоциирует обратимо и незначительно: NH3 + H2O <-> NH4+ + OH-. Раствор имеет резкий характерный запах.',
+    molarConcentration: 0.1,
+    ph: 11.1,
+    imageUrl: '/media/NH3.PNG',
+    videoUrl: '/media/nh3.MP4',
+    likesCount: 1,
+    isLiked: 0,
+    isCreator: 0,
+  },
+  {
+    id: 6,
+    substanceName: 'Фосфорная кислота',
+    description:
+      'Трёхосновная кислота средней силы, диссоциирует ступенчато, в основном по первой ступени: H3PO4 <-> H+ + H2PO4-.',
+    molarConcentration: 0.1,
+    ph: 1.6,
+    imageUrl: null,
+    videoUrl: null,
+    likesCount: 0,
+    isLiked: 0,
+    isCreator: 0,
+  },
+  {
+    id: 7,
+    substanceName: 'Карбонат натрия',
+    description:
+      'Соль сильного основания и слабой кислоты. Карбонат-ион гидролизуется по аниону: CO3 2- + H2O <-> HCO3- + OH-, среда щелочная.',
+    molarConcentration: 0.05,
+    ph: 11.5,
+    imageUrl: null,
+    videoUrl: null,
+    likesCount: 2,
+    isLiked: 0,
+    isCreator: 0,
+  },
+];
