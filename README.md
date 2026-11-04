@@ -1,8 +1,7 @@
 # ion-concentration-app-frontend
 
-Фронтенд для лабораторных по РИП. Тема — растворы электролитов (кислоты, щёлочи, соли):
-их можно листать лентой и искать по молярной концентрации. Бэкенд (REST API на NestJS) лежит в
-[ion-concentration-app-backend](https://github.com/locos1k/ion-concentration-app-backend).
+Фронтенд для лабораторных по РИП. Тема — Расчет концентрации ионов в растворе после смешивания.
+Растворы можно листать лентой и искать по молярной концентрации. Бэкенд (REST API на NestJS) лежит в [ion-concentration-app-backend](https://github.com/locos1k/ion-concentration-app-backend).
 
 В этой ветке (ЛР5) базовое SPA на **React**, **TypeScript** и **Vite** с компонентами **React-Bootstrap**
 и роутингом **React Router**. Работает только на mock-данных: без бэкенда, БД и MinIO,
