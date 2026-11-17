@@ -1,13 +1,15 @@
 import type { FC, ReactNode } from 'react';
 import { Nav, Navbar } from 'react-bootstrap';
-import { Link, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES, ROUTE_LABELS } from '../Routes.ts';
 import type { RouteKeyType } from '../Routes.ts';
+import { useAppDispatch, useAppSelector } from '../store/hooks.ts';
+import { clearUser } from '../store/slices/userSlice.ts';
 
 interface NavbarItem {
   key: RouteKeyType;
   icon: ReactNode;
-  disabled?: boolean;
 }
 
 const stroke = {
@@ -31,7 +33,6 @@ const NAVBAR_ITEMS: NavbarItem[] = [
   },
   {
     key: 'ADD',
-    disabled: true,
     icon: (
       <svg viewBox="0 0 37 37" width="28" height="28" fill="none">
         <circle cx="18.5" cy="18.5" r="16" {...stroke} />
@@ -52,7 +53,6 @@ const NAVBAR_ITEMS: NavbarItem[] = [
   },
   {
     key: 'LOGIN',
-    disabled: true,
     icon: (
       <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
         <path
@@ -69,29 +69,59 @@ const NAVBAR_ITEMS: NavbarItem[] = [
 
 export const SolutionsNavbar: FC = () => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
 
   const isActive = (key: RouteKeyType) => {
     if (key === 'FEED') {
-      return pathname.startsWith(ROUTES.FEED) && !pathname.startsWith(ROUTES.GRID);
+      return pathname.startsWith(ROUTES.FEED) && !pathname.startsWith(ROUTES.GRID) && pathname !== ROUTES.ADD;
     }
     return pathname === ROUTES[key];
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/auth/logout', undefined, { withCredentials: true });
+    } finally {
+      dispatch(clearUser());
+      navigate(ROUTES.GRID);
+    }
   };
 
   return (
     <Navbar as="nav" className="bottom-nav">
       <Nav className="bottom-nav__list">
-        {NAVBAR_ITEMS.map(({ key, icon, disabled }) =>
-          disabled ? (
-            <Nav.Link
-              key={key}
-              disabled
-              className="nav-btn"
-              aria-label={ROUTE_LABELS[key]}
-              title={ROUTE_LABELS[key]}
-            >
-              {icon}
-            </Nav.Link>
-          ) : (
+        {NAVBAR_ITEMS.map(({ key, icon }) => {
+          if (key === 'LOGIN' && isAuthenticated) {
+            return (
+              <Nav.Link
+                key={key}
+                as="button"
+                type="button"
+                className="nav-btn"
+                aria-label="Выход"
+                title="Выход"
+                onClick={handleLogout}
+              >
+                <span className="nav-btn__icon--mirrored">{icon}</span>
+              </Nav.Link>
+            );
+          }
+          if (key === 'ADD' && !isAuthenticated) {
+            return (
+              <Nav.Link
+                key={key}
+                disabled
+                className="nav-btn"
+                aria-label={ROUTE_LABELS[key]}
+                title={ROUTE_LABELS[key]}
+              >
+                {icon}
+              </Nav.Link>
+            );
+          }
+          return (
             <Nav.Link
               key={key}
               as={Link}
@@ -103,8 +133,8 @@ export const SolutionsNavbar: FC = () => {
             >
               {icon}
             </Nav.Link>
-          ),
-        )}
+          );
+        })}
       </Nav>
     </Navbar>
   );

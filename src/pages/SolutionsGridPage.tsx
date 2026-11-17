@@ -1,40 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import type { FC } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import type { SolutionsOutletContext } from '../SolutionsLayout.tsx';
 import { SolutionCard } from '../components/SolutionCard.tsx';
 import { SolutionsFilter } from '../components/SolutionsFilter.tsx';
-import {
-  FILTER_RANGE,
-  filterSolutionsByConcentration,
-} from '../modules/solutions.filter.ts';
-import { SOLUTIONS_MOCK } from '../modules/solutions.mock.ts';
+import { selectIsLoading, useAppDispatch, useAppSelector, useAppStore } from '../store/hooks.ts';
+import { setMax, setMin } from '../store/slices/solutionsSlice.ts';
+import { deleteSolution, fetchSolutions } from '../store/thunks/solutions.thunks.ts';
 
 const SolutionsGridPage: FC = () => {
-  const { setCards } = useOutletContext<SolutionsOutletContext>();
-  const [min, setMin] = useState<number>(FILTER_RANGE.min);
-  const [max, setMax] = useState<number>(FILTER_RANGE.max);
-  const [appliedRange, setAppliedRange] = useState<{
-    min: number;
-    max: number;
-  }>({
-    min: FILTER_RANGE.min,
-    max: FILTER_RANGE.max,
-  });
-
-  const solutions = useMemo(
-    () =>
-      filterSolutionsByConcentration(
-        SOLUTIONS_MOCK,
-        appliedRange.min,
-        appliedRange.max,
-      ),
-    [appliedRange],
-  );
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
+  const { cards, min, max, loaded } = useAppSelector((state) => state.solutions);
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+  const isLoading = useAppSelector(selectIsLoading);
 
   useEffect(() => {
-    setCards(solutions);
-  }, [solutions, setCards]);
+    // при открытии страницы и смене состояния гость/создатель берём сохранённый фильтр из store
+    const { min: savedMin, max: savedMax } = store.getState().solutions;
+    void dispatch(fetchSolutions({ min: savedMin, max: savedMax }));
+  }, [dispatch, store, isAuthenticated]);
 
   return (
     <div className="page-body grid-screen">
@@ -43,18 +26,25 @@ const SolutionsGridPage: FC = () => {
       <SolutionsFilter
         min={min}
         max={max}
-        setMin={setMin}
-        setMax={setMax}
-        onSubmit={() => setAppliedRange({ min, max })}
+        setMin={(value) => dispatch(setMin(value))}
+        setMax={(value) => dispatch(setMax(value))}
+        onSubmit={() => void dispatch(fetchSolutions({ min, max }))}
+        disabled={isLoading}
       />
 
       <div className="cards-grid">
-        {solutions.length ? (
-          solutions.map((solution) => (
-            <SolutionCard key={solution.id} {...solution} />
+        {cards.length ? (
+          cards.map((solution) => (
+            <SolutionCard
+              key={solution.id}
+              {...solution}
+              canDelete={isAuthenticated}
+              disabled={isLoading}
+              onDelete={(id) => void dispatch(deleteSolution(id))}
+            />
           ))
         ) : (
-          <p className="empty">Ничего не найдено</p>
+          loaded && <p className="empty">Ничего не найдено</p>
         )}
       </div>
     </div>

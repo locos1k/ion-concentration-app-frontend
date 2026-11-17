@@ -8,6 +8,7 @@ interface Props {
   setMin: (value: number) => void;
   setMax: (value: number) => void;
   onSubmit: () => void;
+  disabled?: boolean;
 }
 
 export const SolutionsFilter: FC<Props> = ({
@@ -16,6 +17,7 @@ export const SolutionsFilter: FC<Props> = ({
   setMin,
   setMax,
   onSubmit,
+  disabled = false,
 }) => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -50,7 +52,7 @@ export const SolutionsFilter: FC<Props> = ({
           onChange={(event) => setMax(Number(event.target.value))}
         />
       </div>
-      <Button type="submit" className="filter-btn">
+      <Button type="submit" className="filter-btn" disabled={disabled}>
         Найти
       </Button>
     </Form>

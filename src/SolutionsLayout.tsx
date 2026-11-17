@@ -1,22 +1,21 @@
-import { useState } from 'react';
 import type { FC } from 'react';
+import { Spinner } from 'react-bootstrap';
 import { Outlet } from 'react-router-dom';
-import type { Solution } from './modules/solution.model.ts';
-import { SOLUTIONS_MOCK } from './modules/solutions.mock.ts';
 import { SolutionsNavbar } from './components/SolutionsNavbar.tsx';
-
-export interface SolutionsOutletContext {
-  cards: Solution[];
-  setCards: (cards: Solution[]) => void;
-}
+import { selectIsLoading, useAppSelector } from './store/hooks.ts';
 
 export const SolutionsLayout: FC = () => {
-  const [cards, setCards] = useState<Solution[]>(SOLUTIONS_MOCK);
+  const isLoading = useAppSelector(selectIsLoading);
 
   return (
     <div className="screen">
-      <Outlet context={{ cards, setCards }} />
+      <Outlet />
       <SolutionsNavbar />
+      {isLoading && (
+        <div className="loading-overlay" role="status" aria-label="Загрузка">
+          <Spinner animation="border" className="loading-spinner" />
+        </div>
+      )}
     </div>
   );
 };

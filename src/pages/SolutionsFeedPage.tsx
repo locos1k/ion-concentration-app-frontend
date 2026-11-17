@@ -1,26 +1,25 @@
 import { useEffect } from 'react';
 import type { FC } from 'react';
-import { Link, useOutletContext, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '../Routes.ts';
-import type { SolutionsOutletContext } from '../SolutionsLayout.tsx';
-import { SolutionVideo } from '../components/SolutionVideo.tsx';
 import { SolutionDescription } from '../components/SolutionDescription.tsx';
-import { SOLUTIONS_MOCK } from '../modules/solutions.mock.ts';
+import { SolutionVideo } from '../components/SolutionVideo.tsx';
+import { selectIsLoading, useAppDispatch, useAppSelector } from '../store/hooks.ts';
+import { fetchSolutionFeed, likeSolution } from '../store/thunks/solutions.thunks.ts';
 
 const SolutionsFeedPage: FC = () => {
   const { id } = useParams();
-  const { cards } = useOutletContext<SolutionsOutletContext>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useAppDispatch();
+  const { solution, notFound } = useAppSelector((state) => state.feed);
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+  const isLoading = useAppSelector(selectIsLoading);
 
-  const list = cards.length ? cards : SOLUTIONS_MOCK;
-  const solution = id
-    ? (list.find((item) => String(item.id) === id) ??
-      SOLUTIONS_MOCK.find((item) => String(item.id) === id))
-    : list[0];
-
-  const currentIndex = solution
-    ? list.findIndex((item) => item.id === solution.id)
-    : -1;
-  const nextSolution = list[(currentIndex + 1) % list.length];
+  useEffect(() => {
+    if ((location.state as { fresh?: boolean } | null)?.fresh) return;
+    void dispatch(fetchSolutionFeed({ id: id === undefined ? undefined : Number(id) }));
+  }, [dispatch, id, isAuthenticated, location.state]);
 
   useEffect(() => {
     document.title = solution?.substanceName ?? 'Лента';
@@ -29,10 +28,23 @@ const SolutionsFeedPage: FC = () => {
     };
   }, [solution]);
 
+  const handleNext = async () => {
+    if (!solution) return;
+    const next = await dispatch(fetchSolutionFeed({ id: solution.id, next: true }));
+    if (fetchSolutionFeed.fulfilled.match(next)) {
+      navigate(`${ROUTES.FEED}/${next.payload.id}`, { state: { fresh: true } });
+    }
+  };
+
+  const handleLike = () => {
+    if (!solution) return;
+    void dispatch(likeSolution({ id: solution.id, value: solution.isLiked === 1 ? 0 : 1 }));
+  };
+
   if (!solution) {
     return (
       <div className="page-body feed-screen">
-        <p className="empty">Раствор не найден</p>
+        {notFound && !isLoading && <p className="empty">Раствор не найден</p>}
       </div>
     );
   }
@@ -43,19 +55,31 @@ const SolutionsFeedPage: FC = () => {
         <SolutionVideo key={solution.id} src={solution.videoUrl} />
 
         <div className="side-actions">
-          <div className="like-btn">
-            <img
-              className="like-icon"
-              src="/img/solution-like-icon.png"
-              alt="Лайки"
-            />
-            <span>{solution.likesCount}</span>
-          </div>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              className={`like-btn like-btn--active${solution.isLiked === 1 ? ' liked' : ''}`}
+              aria-label={solution.isLiked === 1 ? 'Убрать лайк' : 'Поставить лайк'}
+              aria-pressed={solution.isLiked === 1}
+              disabled={isLoading}
+              onClick={handleLike}
+            >
+              <img className="like-icon" src="/img/solution-like-icon.png" alt="Лайки" />
+              <span>{solution.likesCount}</span>
+            </button>
+          ) : (
+            <div className="like-btn">
+              <img className="like-icon" src="/img/solution-like-icon.png" alt="Лайки" />
+              <span>{solution.likesCount}</span>
+            </div>
+          )}
 
-          <Link
+          <button
+            type="button"
             className="next-btn"
-            to={`${ROUTES.FEED}/${nextSolution.id}`}
             aria-label="Следующий"
+            disabled={isLoading}
+            onClick={handleNext}
           >
             <svg
               viewBox="0 0 24 24"
@@ -72,7 +96,7 @@ const SolutionsFeedPage: FC = () => {
                 strokeLinejoin="round"
               />
             </svg>
-          </Link>
+          </button>
 
           <div className="field-badge" aria-label="pH">
             <span className="field-badge__label">pH</span>
@@ -81,19 +105,14 @@ const SolutionsFeedPage: FC = () => {
 
           <div className="field-badge" aria-label="Молярная концентрация">
             <span className="field-badge__label">моль/л</span>
-            <span className="field-badge__value">
-              {solution.molarConcentration}
-            </span>
+            <span className="field-badge__value">{solution.molarConcentration}</span>
           </div>
         </div>
 
         <div className="info-overlay">
           <div className="info-text">
             <h1 className="title">{solution.substanceName}</h1>
-            <SolutionDescription
-              key={solution.id}
-              text={solution.description}
-            />
+            <SolutionDescription key={solution.id} text={solution.description} />
           </div>
         </div>
       </div>
